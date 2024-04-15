@@ -1,0 +1,14 @@
+NAME="Arch  Hyprland"
+PRETTY_NAME="ArchHyprland Linux"
+ID=archlinux
+BUILD_ID=rolling
+HOME_URL="https://Archlinux.org"
+DOCUMENTATION_URL="https://wiki.Archlinux.org/en/"
+SUPPORT_URL="https://Archlinux.org/"
+BUG_REPORT_URL="https://Archlinux.org/"
+LOGO=archlinux-logo
+VARIANT="Desktop Edition"
+ANSI_COLOR="0;35"
+
+IMAGE_ID=Archlinux Hyprland Gnome
+IMAGE_VERSION=2024.03.10
