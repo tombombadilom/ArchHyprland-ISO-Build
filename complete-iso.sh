@@ -153,18 +153,17 @@ backup_configs() {
         echo "The source file ${ARCHISO_PATH}/os-release does not exist."
         exit 1
     fi
-
-    # Perform the copy, optionally using sudo for permissions issues
-    cp "${ARCHISO_PATH}/os-release" "${ARCHLIVE_PATH}/etc/os-release" || {
-        echo "Failed to copy the file to ${ARCHLIVE_PATH}/etc/os-release"
-        exit 1
-    }
      # Check if the source file exists
     if [ ! -f "${ARCHISO_PATH}/etc" ]; then
-        echo "The source file ${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc does not exist."
+        echo "The source file ${ARCHISO_PATH}/{$LOCAL_REPO_NAME}/airootfs/etc does not exist."
         mkdir -p "${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc"
         echo "Directory ${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc created"
     fi
+    # Perform the copy, optionally using sudo for permissions issues
+    cp "${ARCHISO_PATH}/os-release" "${ARCHLIVE}/${LOCAL_REPO_NAME}/airootfs/etc/os-release" || {
+        echo "Failed to copy the file to ${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/etc/os-release"
+        exit 1
+    }
     
     # Check if the source file exists
     if [ ! -f "${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables" ]; then
@@ -186,11 +185,10 @@ backup_configs() {
     cp "$ARCHLIVE_PATH/packages.x86_64" "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/"
 
     # Add code here to backup etc and user configs...
-    sudo tar -czvf "$ARCHLIVE_PATH/etc_backup.tar.gz" -C /etc/ --exclude-caches-all --exclude-vcs
+    sudo tar -czvf "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/etc/etc_backup.tar.gz" -C /etc/ --exclude-caches-all --exclude-vcs
     tar -czvf "$ARCHLIVE_PATH/user_configs.tar.gz" "$HOME/.config/" --exclude={"$HOME/.config/variety","$HOME/.local/share/TelegramDesktop/tdata/user_data"}
-
 }
-
+vim .
 clean_iptables(){
     sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/empty.rules{,.bak}
     sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/simple_firewall.rules{,.bak}
