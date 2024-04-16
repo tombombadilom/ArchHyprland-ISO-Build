@@ -34,7 +34,7 @@ SCRIPTS_PATH="$ARCHLIVE_PATH/airootfs/root/scripts"
 LIVEUSER_HOME="$ARCHLIVE_PATH/airootfs/home/liveuser"
 ARCHISO_OUT="$ARCHISO_PATH/ISO"
 PACMAN_CONF_PATH="$ARCHLIVE_PATH/pacman.conf"
-
+ARCHLIVE_SOURCE="/usr/share/archiso/configs/releng/"
 # Define local repository details
 LOCAL_REPO_NAME="x86_64"
 LOCAL_REPO_PATH="$HOME/$LOCAL_REPO_NAME"
@@ -49,6 +49,13 @@ if [ -d "$ARCHLIVE_PATH" ]; then
             # User wants to erase: remove the directory recursively
             sudo rm -rf "$ARCHLIVE_PATH"
             echo "Directory "$ARCHLIVE_PATH" has been removed."
+            # Create the directory with necessary parents
+            mkdir -p "$ARCHLIVE_PATH"
+            sudo rsync -av "$ARCHLIVE_SOURCE" "$ARCHLIVE_PATH"
+ 
+            sudo rm -rf "$ARCHISO_OUT"
+            mkdir -p "$ARCHISO_OUT"
+            echo "$ARCHLIVE_PATH directory is created."
             ;;
         *)
             # User does not want to erase or response is invalid: keep the existing directory and continue
@@ -58,9 +65,7 @@ if [ -d "$ARCHLIVE_PATH" ]; then
 fi
 
 
-# Create the directory with necessary parents
-mkdir -p "$ARCHLIVE_PATH"
-echo "$ARCHLIVE_PATH directory is created."
+
 
 # Function: Install missing packages
 install_missing_packages() {
@@ -68,20 +73,20 @@ install_missing_packages() {
 }
 
 # Function: Create local repository and add to pacman.conf
+# Adjusted Function: Create local repository and add to pacman.conf
 create_local_repository() {
     mkdir -p "$LOCAL_REPO_PATH"
     chown "$USER":"$USER" "$LOCAL_REPO_PATH"
+    # Ensure the DB file exists or create it
+    touch "$LOCAL_REPO_PATH/x86_64.db"  # Assuming your DB is named like this
 
-    # Add the local repository to pacman.conf if not already present
-    if ! grep -q "^\[$LOCAL_REPO_NAME\]" "$PACMAN_CONF_PATH"; then
-        echo "Adding local repository to pacman.conf"
-        cat <<EOF | sudo tee -a "$PACMAN_CONF_PATH"
-["$LOCAL_REPO_NAME"]
-SigLevel = Optional TrustAll
-Server = file://"$LOCAL_REPO_PATH"
-EOF
+    if ! grep -q "\[$LOCAL_REPO_NAME\]" "$PACMAN_CONF_PATH"; then
+        echo "[$LOCAL_REPO_NAME]" | sudo tee -a "$PACMAN_CONF_PATH"
+        echo "SigLevel = Optional TrustAll" | sudo tee -a "$PACMAN_CONF_PATH"
+        echo "Server = file://$LOCAL_REPO_PATH" | sudo tee -a "$PACMAN_CONF_PATH"
     fi
 }
+
 
 # Function: Clean system of unnecessary packages (use with caution!)
 clean_system() {
@@ -90,7 +95,6 @@ clean_system() {
 }
 copy_config_files() {
     # Copy the necessary configuration files
-    cp -r "/usr/share/archiso/configs/releng/*" "$ARCHLIVE_PATH"
     sudo cp "/etc/pacman.conf" "$ARCHLIVE_PATH/pacman.conf"
     # Extraction des configurations de Calamares dans /etc
     sudo tar -xzf "$ARCHISO_PATH/calam/etc-calamares.tar.gz" -C "$ARCHLIVE_PATH/airootfs/etc"
@@ -179,27 +183,14 @@ backup_configs() {
    
     # Add the packages list to the custom archiso
     yay -Qqe > "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/packages.x86_64"
-    # cp "$ARCHLIVE_PATH/packages.x86_64" "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/"
+    cp "$ARCHLIVE_PATH/packages.x86_64" "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/"
 
     # Add code here to backup etc and user configs...
     sudo tar -czvf "$ARCHLIVE_PATH/etc_backup.tar.gz" -C /etc/ --exclude-caches-all --exclude-vcs
     tar -czvf "$ARCHLIVE_PATH/user_configs.tar.gz" "$HOME/.config/" --exclude={"$HOME/.config/variety","$HOME/.local/share/TelegramDesktop/tdata/user_data"}
 
 }
-F
-# Function: Create local repository and add to pacman.conf
-create_local_repository() {
-    mkdir -p "$LOCAL_REPO_PATH"
-    chown "$USER":"$USER" "$LOCAL_REPO_PATH"
 
-    if ! grep -q "\[$LOCAL_REPO_NAME\]" "$PACMAN_CONF_PATH"; then
-        cat <<EOF | sudo tee -a "$PACMAN_CONF_PATH"
-[$LOCAL_REPO_NAME]
-SigLevel = Optional TrustAll
-Server = file://$LOCAL_REPO_PATH
-EOF
-    fi
-}
 clean_iptables(){
     sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/empty.rules{,.bak}
     sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/simple_firewall.rules{,.bak}
@@ -207,7 +198,7 @@ clean_iptables(){
 }
 # Step 1 clean system 
 clean_system
-F
+
 # Step 2 install required packages
 install_missing_packages
 
@@ -219,7 +210,7 @@ create_local_repository
 
 # Step 5 clean unwanted firewall iptables
 clean_iptables
-mkdir -p "$ARCHISO_OUT"
+
 
 # Step 6: Build ISO (make sure to customize mkarchiso command according to your needs)
 sudo mkarchiso -v -w "$ARCHLIVE_PATH" -o "$ARCHISO_OUT" "$ARCHLIVE_PATH"
