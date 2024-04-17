@@ -25,8 +25,8 @@
 # """
 
 # Define constants
-export ARCHLIVE_PATH="/home/tom/archlive"
-export ARCHISO_PATH="/home/tom/Documents/archiso"
+export ARCHLIVE_PATH="/$HOME/archlive"
+export ARCHISO_PATH="/$HOME/Documents/archiso"
 export PACKAGES_TO_INSTALL=(archiso calamares syslinux memtest86+ memtest86+-efi)
 
 CUSTOM_ARCHIVES_PATH="$ARCHLIVE_PATH/airootfs/root/custom_archives"
