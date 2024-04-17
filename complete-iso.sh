@@ -25,8 +25,8 @@
 # """
 
 # Define constants
-export ARCHLIVE_PATH="/$HOME/archlive"
-export ARCHISO_PATH="/$HOME/Documents/archiso"
+export ARCHLIVE_PATH="$HOME/archlive"
+export ARCHISO_PATH="$HOME/Documents/archiso"
 export PACKAGES_TO_INSTALL=(archiso calamares syslinux memtest86+ memtest86+-efi)
 
 CUSTOM_ARCHIVES_PATH="$ARCHLIVE_PATH/airootfs/root/custom_archives"
@@ -43,12 +43,12 @@ LOCAL_REPO_PATH="$HOME/$LOCAL_REPO_NAME"
 # Check if $ARCHLIVE_PATH exists
 if [ -d "$ARCHLIVE_PATH" ]; then
     # Prompt the user to ask if they want to erase it
-    read -p "The directory "$ARCHLIVE_PATH" already exists. Do you want to erase it? [y/N] " response
+    read -p "The directory $ARCHLIVE_PATH already exists. Do you want to erase it? [y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
             # User wants to erase: remove the directory recursively
             sudo rm -rf "$ARCHLIVE_PATH"
-            echo "Directory "$ARCHLIVE_PATH" has been removed."
+            echo "Directory $ARCHLIVE_PATH has been removed."
             # Create the directory with necessary parents
             mkdir -p "$ARCHLIVE_PATH"
             sudo rsync -av "$ARCHLIVE_SOURCE" "$ARCHLIVE_PATH"
@@ -90,20 +90,22 @@ create_local_repository() {
 
 # Function: Clean system of unnecessary packages (use with caution!)
 clean_system() {
-    yay -Rns $(yay -Qtdq) --noconfirm 
+    yay -Rns "$(yay -Qtdq)" --noconfirm 
     yay -Sc --noconfirm
 }
 copy_config_files() {
     # Copy the necessary configuration files
-    sudo cp "/etc/pacman.conf" "$ARCHLIVE_PATH/pacman.conf"
+    mkdir -p "$ARCHLIVE_PATH"
+    mkdir -p "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}"
+    cp "/etc/pacman.conf" "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/pacman.conf"
     # Extraction des configurations de Calamares dans /etc
-    sudo tar -xzf "$ARCHISO_PATH/calam/etc-calamares.tar.gz" -C "$ARCHLIVE_PATH/airootfs/etc"
+    tar -xzf "$ARCHISO_PATH/calam/etc-calamares.tar.gz" -C "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/etc"
 
     # Extraction des fichiers Calamares dans /usr
-    sudo tar -xzf "$ARCHISO_PATH/calam-archives/usr_calamares.tar.gz" -C "$ARCHLIVE_PATH/airootfs/usr"
+    tar -xzf "$ARCHISO_PATH/calam-archives/usr_calamares.tar.gz" -C "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/usr"
 
     # Extraction des icônes dans /usr
-    sudo tar -xzf "$ARCHISO_PATH/calam-archives/usr_icons.tar.gz" -C "$ARCHLIVE_PATH/airootfs/usr"
+    tar -xzf "$ARCHISO_PATH/calam-archives/usr_icons.tar.gz" -C "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/usr"
 }
 
 # Function: Backup configurations (customize paths as needed)
@@ -140,7 +142,7 @@ backup_configs() {
     sudo find "$CUSTOM_ARCHIVES_PATH" -type f -exec chmod 644 {} \;
 
     # Ensure the destination directories exist
-    mkdir -p "${ARCHLIVE_PATH}/etc" || { echo "Failed to create directory structure at ${ARCHLIVE_PATH}/etc"; exit 1; }
+    mkdir -p "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/etc" || { echo "Failed to create directory structure at ${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/etc"; exit 1; }
 
     # Check if the environment variables are correctly set by verifying they are not empty
     if [ -z "${ARCHISO_PATH}" ] || [ -z "${ARCHLIVE_PATH}" ]; then
@@ -166,15 +168,15 @@ backup_configs() {
     }
     
     # Check if the source file exists
-    if [ ! -f "${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables" ]; then
-        echo "The source file ${ARCHISO_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables does not exist."
-        sudo cp -r /etc/iptables "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/etc"
-        sudo chown -R $USER:$USER "$ARCHLIVE_PATH/$LOCAL_REPO_NAME"
+    if [ ! -f "${ARCHISO_PATH}/${LOCAL_REPO_NAME}/airootfs/etc/iptables" ]; then
+        echo "The source file ${ARCHISO_PATH}/${LOCAL_REPO_NAME}/airootfs/etc/iptables does not exist."
+        sudo cp -r /etc/iptables "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/etc"
+        sudo chown -R "$USER:$USER" "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}"
     fi
 
     # Perform the copy, optionally using sudo for permissions issues
-    cp "${ARCHISO_PATH}/os-release" "${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/os-release" || {
-        echo "Failed to copy the file to ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/os-release"
+    cp "${ARCHISO_PATH}/os-release" "${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/etc/os-release" || {
+        echo "Failed to copy the file to ${ARCHLIVE_PATH}/${LOCAL_REPO_NAME}/airootfs/etc/os-release"
         exit 1
     }
     echo "os-release copied successfully."
@@ -186,13 +188,13 @@ backup_configs() {
 
     # Add code here to backup etc and user configs...
     sudo tar -czvf "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/etc/etc_backup.tar.gz" -C /etc/ --exclude-caches-all --exclude-vcs
-    tar -czvf "$ARCHLIVE_PATH/user_configs.tar.gz" "$HOME/.config/" --exclude={"$HOME/.config/variety","$HOME/.local/share/TelegramDesktop/tdata/user_data"}
+    tar -czvf "$ARCHLIVE_PATH/$LOCAL_REPO_NAME/airootfs/home/liveuser/user_configs.tar.gz" "$HOME/.config/" --exclude={"$HOME/.config/variety","$HOME/.local/share/TelegramDesktop/tdata/user_data"}
 }
-vim .
+
 clean_iptables(){
-    sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/empty.rules{,.bak}
-    sudo mv ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/simple_firewall.rules{,.bak}
-    sudo pacman -Syu --overwrite ${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/*
+    sudo mv "${ARCHLIVE_PATH}"/$LOCAL_REPO_NAME/airootfs/etc/iptables/empty.rules{,.bak}
+    sudo mv "${ARCHLIVE_PATH}"/$LOCAL_REPO_NAME/airootfs/etc/iptables/simple_firewall.rules{,.bak}
+    sudo pacman -Syu --overwrite "${ARCHLIVE_PATH}/$LOCAL_REPO_NAME/airootfs/etc/iptables/*"
 }
 # Step 1 clean system 
 clean_system
