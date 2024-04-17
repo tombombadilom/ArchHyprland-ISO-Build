@@ -1,5 +1,5 @@
 ---
-componentName:  archlinux
+componentName:  parchlinux
 
 # This selects between different welcome texts. When false, uses
 # the traditional "Welcome to the %1 installer.", and when true,
@@ -13,17 +13,17 @@ welcomeStyleCalamares:   false
 welcomeExpandingLogo:   true
 
 strings:
-    productName:         Arch Hyprland Linux
-    shortProductName:    Arch Hyprland
+    productName:         Parch Linux
+    shortProductName:    Parch
     version:             Rolling
     shortVersion:        Rolling
-    versionedName:       Arch Hyprland Linux Rolling
-    shortVersionedName:  Arch Hyprland Linux Rolling
-    bootloaderEntryName: Arch Hyprland
-    productUrl:          https://archlinux.ir
-    supportUrl:          https://github.com/archlinux
-    knownIssuesUrl:      https://archlinux.ir
-    releaseNotesUrl:     https://blog.archlinux.ir
+    versionedName:       Parch Linux Rolling
+    shortVersionedName:  Parch Linux Rolling
+    bootloaderEntryName: Parch
+    productUrl:          https://parchlinux.ir
+    supportUrl:          https://github.com/parchlinux
+    knownIssuesUrl:      https://parchlinux.ir
+    releaseNotesUrl:     https://blog.parchlinux.ir
 
 images:
     productLogo:         "calamares_product_icon.svg"

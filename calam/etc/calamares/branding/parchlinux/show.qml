@@ -43,7 +43,7 @@ Presentation
             Label {
                 Layout.fillWidth: true
 
-                text: qsTr("Welcome to the Arch Hyprland Linux!")
+                text: qsTr("Welcome to the Parch Linux!")
                 font.pixelSize: 22
                 font.bold: true
                 color: "white"
@@ -100,7 +100,7 @@ Presentation
 
                 font.pixelSize: 12
                 color: "white"
-                text: qsTr("Arch Hyprland is a complete Operating System that ships the essential apps and services for the daily use: office applications, PDF reader, image editor")
+                text: qsTr("Parch is a complete Operating System that ships the essential apps and services for the daily use: office applications, PDF reader, image editor")
                 wrapMode: Text.WordWrap
             }
         }
@@ -137,7 +137,7 @@ Presentation
 
                 font.pixelSize: 12
                 color: "white"
-                text: qsTr("Thanks for using Arch Hyprland Linux")
+                text: qsTr("Thanks for using Parch Linux")
                 wrapMode: Text.WordWrap
             }
         }
